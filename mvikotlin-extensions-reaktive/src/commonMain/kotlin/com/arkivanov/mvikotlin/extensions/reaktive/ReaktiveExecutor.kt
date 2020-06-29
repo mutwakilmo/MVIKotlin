@@ -84,9 +84,25 @@ open class ReaktiveExecutor<in Intent : Any, in Action : Any, in State : Any, Re
         callbacks.requireValue.onLabel(label)
     }
 
-    /*
-    * DisposableScope delegate
-    */
+    fun Observable<Result>.dispatchResults(isThreadLocal: Boolean = false): Disposable =
+        subscribeScoped(isThreadLocal = isThreadLocal, onNext = ::dispatch)
+
+    fun Observable<Label>.publishLabels(isThreadLocal: Boolean = false): Disposable =
+        subscribeScoped(isThreadLocal = isThreadLocal, onNext = ::publish)
+
+    fun Single<Result>.dispatchResult(isThreadLocal: Boolean = false): Disposable =
+        subscribeScoped(isThreadLocal = isThreadLocal, onSuccess = ::dispatch)
+
+    fun Single<Label>.publishLabel(isThreadLocal: Boolean = false): Disposable =
+        subscribeScoped(isThreadLocal = isThreadLocal, onSuccess = ::publish)
+
+    fun Maybe<Result>.dispatchResult(isThreadLocal: Boolean = false): Disposable =
+        subscribeScoped(isThreadLocal = isThreadLocal, onSuccess = ::dispatch)
+
+    fun Maybe<Label>.publishLabel(isThreadLocal: Boolean = false): Disposable =
+        subscribeScoped(isThreadLocal = isThreadLocal, onSuccess = ::publish)
+
+    //region DisposableScope delegate
 
     final override val isDisposed: Boolean get() = scope.isDisposed
 
@@ -157,4 +173,6 @@ open class ReaktiveExecutor<in Intent : Any, in Action : Any, in State : Any, Re
                 onSuccess = onSuccess
             )
         }
+
+    //endregion
 }

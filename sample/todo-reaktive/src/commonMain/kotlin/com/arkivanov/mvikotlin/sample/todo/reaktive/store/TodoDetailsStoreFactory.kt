@@ -4,8 +4,11 @@ import com.arkivanov.mvikotlin.core.store.Executor
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.reaktive.ReaktiveExecutor
 import com.arkivanov.mvikotlin.sample.todo.common.database.TodoDatabase
-import com.arkivanov.mvikotlin.sample.todo.common.internal.store.details.TodoDetailsStore.*
+import com.arkivanov.mvikotlin.sample.todo.common.internal.store.details.TodoDetailsStore.Intent
+import com.arkivanov.mvikotlin.sample.todo.common.internal.store.details.TodoDetailsStore.Label
+import com.arkivanov.mvikotlin.sample.todo.common.internal.store.details.TodoDetailsStore.State
 import com.arkivanov.mvikotlin.sample.todo.common.internal.store.details.TodoDetailsStoreAbstractFactory
+import com.badoo.reaktive.completable.andThen
 import com.badoo.reaktive.completable.completableFromFunction
 import com.badoo.reaktive.completable.observeOn
 import com.badoo.reaktive.completable.subscribeOn
@@ -15,6 +18,7 @@ import com.badoo.reaktive.single.map
 import com.badoo.reaktive.single.observeOn
 import com.badoo.reaktive.single.singleFromFunction
 import com.badoo.reaktive.single.subscribeOn
+import com.badoo.reaktive.single.toSingle
 
 internal class TodoDetailsStoreFactory(
     storeFactory: StoreFactory,
@@ -34,7 +38,7 @@ internal class TodoDetailsStoreFactory(
                 .subscribeOn(ioScheduler)
                 .map { it?.data?.let(Result::Loaded) ?: Result.Finished }
                 .observeOn(mainScheduler)
-                .subscribeScoped(isThreadLocal = true, onSuccess = ::dispatch)
+                .dispatchResult(isThreadLocal = true)
         }
 
         override fun executeIntent(intent: Intent, getState: () -> State) {
@@ -74,9 +78,8 @@ internal class TodoDetailsStoreFactory(
             }
                 .subscribeOn(ioScheduler)
                 .observeOn(mainScheduler)
-                .subscribeScoped(isThreadLocal = true) {
-                    dispatch(Result.Finished)
-                }
+                .andThen(Result.Finished.toSingle())
+                .dispatchResult(isThreadLocal = true)
         }
     }
 }

@@ -44,7 +44,7 @@ internal class TodoAddStoreFactory(
                 .subscribeOn(ioScheduler)
                 .observeOn(mainScheduler)
                 .map(Label::Added)
-                .subscribeScoped(isThreadLocal = true, onSuccess = ::publish)
+                .publishLabel(isThreadLocal = true)
         }
     }
 }

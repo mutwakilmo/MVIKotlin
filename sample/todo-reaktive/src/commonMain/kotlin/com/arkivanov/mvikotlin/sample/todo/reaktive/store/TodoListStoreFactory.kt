@@ -31,7 +31,7 @@ internal class TodoListStoreFactory(
                 .subscribeOn(ioScheduler)
                 .map(Result::Loaded)
                 .observeOn(mainScheduler)
-                .subscribeScoped(isThreadLocal = true, onSuccess = ::dispatch)
+                .dispatchResult(isThreadLocal = true)
         }
 
         override fun executeIntent(intent: Intent, getState: () -> State) {
